@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from snippets.models import Snippet
 from snippets.serializers import SnippetSerializer
 
+
 # creating a function-based view with the @api_view decorator, which will shorten up
 # a lot of the code previously written with the JSONResponse object, this one will
 # allow GET or POST req/res
@@ -39,26 +40,41 @@ def snippet_list(request, format=None):
         # 2- send explicit status code of 400, BAD REQUEST
         return Response(serializer.errors, status=status.HTPP_400_BAD_REQUEST)
 
+
 @api_view(['GET', 'PUT', 'DELETE'])
+# create a function-based view for a specific snippet detail taking
+# a request object with a pk as arguements
 def snippet_detail(request, pk, format=None):
     """
     Retrieve, update, or delete a snippet instance.
     """
     try:
+        # look for a snippet object with a certain pk
         snippet = Snippet.objects.get(pk=pk)
+    # if snippet does not exist, do the following:
     except Snippet.DoesNotExist:
+        # return a drf Response object with an explicit status 404 NOT FOUND
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+    # if request object = 'GET', do the following:
     if request.method == 'GET':
+        # serialize snippet and ser it to 'serializer'
         serializer = SnippetSerializer(snippet)
+        # return the serialized data as a drf Response object
         return Response(serializer.data)
 
     # else if the request object = 'PUT' do the following:
     elif request.method == 'PUT':
+        # set 'serializer' to a serialized request object of the data
         serializer = SnippetSerializer(snippet, data=request.data)
+        # if the serializer is valid, do the following:
         if serializer.is_valid():
+            # save serilaizer
             serializer.save()
+            # return a Response object of the serialized data
             return Response(serializer.data)
+        # if serializer is not valid, return a Response object with a serliazer
+        # error and an explicit status code of 400 BAD REQUEST
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # else if the request object = 'DELETE' do the following:
