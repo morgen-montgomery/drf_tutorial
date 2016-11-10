@@ -39,51 +39,31 @@ def snippet_list(request):
         # 2- send explicit status code of 400, BAD REQUEST
         return Response(serializer.errors, status=status.HTPP_400_BAD_REQUEST)
 
-
-@csrf_exempt
-# creating a function for what an individual snippet action will be
-# look at the request object, and the snippet's pk
+@api_view(['GET', 'PUT', 'DELETE'])
 def snippet_detail(request, pk):
     """
-    Retrieve, update, or delete a code snippet.
+    Retrieve, update, or delete a snippet instance.
     """
-    # look for something particular:
     try:
-        # find and retrieve the snippet object with a matching pk
         snippet = Snippet.objects.get(pk=pk)
-    # if you cannot find the snippet with a matching pk, do the following:
     except Snippet.DoesNotExist:
-        # return HttpResponse with a status code of 404 for server not finding the
-        # thing you are searching for
-        return HttpResponse(status=404)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-    # if object is 'GET', do the following:
     if request.method == 'GET':
-        # serialize the snippet
         serializer = SnippetSerializer(snippet)
-        # return this as an HttpResponse in JSON form
-        return JSONResponse(serializer.data)
+        return Response(serializer.data)
 
-    # if object is 'PUT', do the following:
+    # else if the request object = 'PUT' do the following:
     elif request.method == 'PUT':
-        # parse the request object to turn it into Python native datatypes
-        data = JSONParser().parser(request)
-        # restore native datatypes into fully populated object instance
-        serializer = SnippetSerializer(snippet, data=data)
-        # if this passes all of the validators on teh Snippet class
+        serializer = SnippetSerializer(snippet, data=request.data)
         if serializer.is_valid():
-            # save the serialized object
             serializer.save()
-            # return the response object
-            return JSONResponse(serializer.data)
-        # if request object is 'PUT' and serializer is not valid, respond with an
-        # error and status code roo for server not processing request due to client error
-        return JSONResponse(serializer.errors, status=400)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # if object is 'DELETE', do the following:
+    # else if the request object = 'DELETE' do the following:
     elif request.method == 'DELETE':
-        # delete the snippet
+        # delete snippet
         snippet.delete()
-        # return HttpReponse as status code 204 for server successfully fulfilling
-        # request with no content to send in response payload body
-        return HttpResponse(status=204)
+        # return a Response object that has an explicit status of 204 NO CONTENT
+        return Response(status=status.HTTP_204_NO_CONTENT)
