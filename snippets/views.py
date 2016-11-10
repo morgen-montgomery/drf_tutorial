@@ -1,44 +1,41 @@
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from snippets.models import Snippet
 from snippets.serializers import SnippetSerializer
+from django.http import Http404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
-
-# creating a function-based view with the @api_view decorator, which will shorten up
-# a lot of the code previously written with the JSONResponse object, this one will
-# allow GET or POST req/res
-@api_view(['GET', 'POST'])
-# this function will pertain to the entire snippet list, vs singling one out which
-# we will see below
-def snippet_list(request, format=None):
+# create a class 'SnippetList' as an APIView
+class SnippetList(APIView):
     """
     List all snippets, or create a new snippet.
     """
-    # if the request object is 'GET' then do the following:
-    if request.method == 'GET':
-        # set 'snippet' to all of the Snippet objects in the list
-        snippets = Snippet.object.all()
-        # set 'serializer' to one query set of snippet objects
-        serilaizer = SnippetSerializer(snippets, many=True)
-        # return this serialized data as 1 Response object that will take on the
-        # content type requested by the client
-        return Response(serilaizer.data)
+    # when SnippetList has a function of get, it creates an instance that
+    # takes a request, and does the following:
+    def get(self, request, format=None):
+        # retrieve all snippet objects, turn them into a list, and set that to 'snippets'
+        snippets = Snippet.objects.all()
+        # take this list of objects and return them as one serilaized query set
+        serializer = SnippetSerializer(snippets, many=True)
+        # return the serialized data as a drf Response object
+        return Response(serializer.data)
 
-    # if the request object is 'POST' then do the following:
-    elif request.method == 'POST':
-        # set 'serializer' to serialized request data
+    # when SnippetList has a function of post, it creates an instance that
+    # takes a request, and dows the following:
+    def post(self, request, format=None):
+        # take the request object data and turn it into serialized data, set
+        # this to 'serializer'
         serializer = SnippetSerializer(data=request.data)
-        # if this serializer is valid, do the following:
+        # is the serializer is valid, do the following:
         if serializer.is_valid():
-            # save serialized request data
+            # save serializer
             serializer.save()
-            # return a Response object of 1- serialized data that has now been
-            # saved, 2- send an explicit status code of 201, CREATED
+            # return serialized data along with a drf explicit status code 201 CREATED
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # if the serializer is not valid 1- send back a serializer error,
-        # 2- send explicit status code of 400, BAD REQUEST
-        return Response(serializer.errors, status=status.HTPP_400_BAD_REQUEST)
+        # if serializer is not valid, return serializer errors, and explicit status code
+        # 400 BAD REQUEST
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
