@@ -64,7 +64,7 @@ class SnippetDetail(APIView):
 
     # when SnippetDetail has a function of put, it creates an instance that
     # takes a request object, and a pk, and does the following:
-    def put(self, request, pk. format=None):
+    def put(self, request, pk, format=None):
         # get an instance of an object with a certain pk and set it to 'snippet'
         snippet = self.get_object(pk)
         # create a serialized isntance of data for the request object and set it to 'serializer'
