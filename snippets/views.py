@@ -37,46 +37,54 @@ class SnippetList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-@api_view(['GET', 'PUT', 'DELETE'])
-# create a function-based view for a specific snippet detail taking
-# a request object with a pk as arguements
-def snippet_detail(request, pk, format=None):
+# create a class 'SnippetDetail' as an APIView
+class SnippetDetail(APIView):
     """
     Retrieve, update, or delete a snippet instance.
     """
-    try:
-        # look for a snippet object with a certain pk
-        snippet = Snippet.objects.get(pk=pk)
-    # if snippet does not exist, do the following:
-    except Snippet.DoesNotExist:
-        # return a drf Response object with an explicit status 404 NOT FOUND
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    # when SnippetDetail has a function of get_object, it creates an instance that
+    # takes a pk, and does the following:
+    def get_object(self, pk):
+        try:
+            # return a snippet object with a certain pk
+            return Snippet.objects.get(pk=pk)
+        # if snippet does not exist, return a 404 Http error
+        except Snippet.DoesNotExist:
+            raise Http404
 
-    # if request object = 'GET', do the following:
-    if request.method == 'GET':
-        # serialize snippet and ser it to 'serializer'
+    # when SnippetDetail has a function of get, it creates an instance that
+    # takes a request object, and a pk, and does the following:
+    def get(self, request, pk, format=None):
+        # get an instance of an object with a certain pk and set it to 'snippet'
+        snippet = self.get_object(pk)
+        # serialize this snippet and set it to 'serializer'
         serializer = SnippetSerializer(snippet)
-        # return the serialized data as a drf Response object
+        # return this serialized data asa drf Response object
         return Response(serializer.data)
 
-    # else if the request object = 'PUT' do the following:
-    elif request.method == 'PUT':
-        # set 'serializer' to a serialized request object of the data
+    # when SnippetDetail has a function of put, it creates an instance that
+    # takes a request object, and a pk, and does the following:
+    def put(self, request, pk. format=None):
+        # get an instance of an object with a certain pk and set it to 'snippet'
+        snippet = self.get_object(pk)
+        # create a serialized isntance of data for the request object and set it to 'serializer'
         serializer = SnippetSerializer(snippet, data=request.data)
-        # if the serializer is valid, do the following:
+        # if serializer is valid, do the following:
         if serializer.is_valid():
-            # save serilaizer
+            # save serializer
             serializer.save()
-            # return a Response object of the serialized data
+            # return serialized data as a drf Response object
             return Response(serializer.data)
-        # if serializer is not valid, return a Response object with a serliazer
-        # error and an explicit status code of 400 BAD REQUEST
+        # if serializer is not valid, return serializer errors, and explicit status code
+        # 400 BAD REQUEST
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # else if the request object = 'DELETE' do the following:
-    elif request.method == 'DELETE':
+    # when SnippetDetail has a function of delete, it creates an instance that
+    # takes a request object, and a pk, and does the following:
+    def delete(self, request, pk, format=None):
+        # get an instance of an object with a certain pk and set it to 'snippet'
+        snippet = self.get_object(pk)
         # delete snippet
         snippet.delete()
-        # return a Response object that has an explicit status of 204 NO CONTENT
+        # return drf Response object with an Http status of 204 NO CONTENT
         return Response(status=status.HTTP_204_NO_CONTENT)
