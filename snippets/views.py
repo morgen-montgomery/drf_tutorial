@@ -1,40 +1,22 @@
 from snippets.models import Snippet
 from snippets.serializers import SnippetSerializer
-from django.http import Http404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import mixins
+from rest_framework import generics
 
-# create a class 'SnippetList' as an APIView
-class SnippetList(APIView):
-    """
-    List all snippets, or create a new snippet.
-    """
-    # when SnippetList has a function of get, it creates an instance that
-    # takes a request, and does the following:
-    def get(self, request, format=None):
-        # retrieve all snippet objects, turn them into a list, and set that to 'snippets'
-        snippets = Snippet.objects.all()
-        # take this list of objects and return them as one serilaized query set
-        serializer = SnippetSerializer(snippets, many=True)
-        # return the serialized data as a drf Response object
-        return Response(serializer.data)
+# create a class 'SnippetList' and pass in List, Create, and GenericAPIView mixins
+class Snippetlist(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+    # get all snippet objects as a list and set them to 'queryset'
+    queryset = Snippet.objects.all()
+    # serialize things
+    serializer_class = SnippetSerializer
 
-    # when SnippetList has a function of post, it creates an instance that
-    # takes a request, and dows the following:
-    def post(self, request, format=None):
-        # take the request object data and turn it into serialized data, set
-        # this to 'serializer'
-        serializer = SnippetSerializer(data=request.data)
-        # is the serializer is valid, do the following:
-        if serializer.is_valid():
-            # save serializer
-            serializer.save()
-            # return serialized data along with a drf explicit status code 201 CREATED
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # if serializer is not valid, return serializer errors, and explicit status code
-        # 400 BAD REQUEST
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # if get is called, get and return a list of serialized data
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+        # if post is called, create an item list object
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
 
 
 # create a class 'SnippetDetail' as an APIView
