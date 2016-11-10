@@ -1,53 +1,43 @@
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from snippets.models import Snippet
 from snippets.serializers import SnippetSerializer
 
-class JSONResponse(HttpResponse):
-    """
-    An HttpResponse that renders its content into JSON.
-    """
-    def __init__(self, data, **kwargs):
-        content = JSONRenderer().render(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
-
-# used when you want to grant access to users without a CSRF token
-# (not a widely used practice)
-@csrf_exempt
-# creating a function for what the snippet list (ALL snippets) action will be
-# look at the request object
+# creating a function-based view with the @api_view decorator, which will shorten up
+# a lot of the code previously written with the JSONResponse object, this one will
+# allow GET or POST req/res
+@api_view(['GET', 'POST'])
+# this function will pertain to the entire snippet list, vs singling one out which
+# we will see below
 def snippet_list(request):
     """
-    List all code snippets, or create a new snippet.
+    List all snippets, or create a new snippet.
     """
-    # if object is 'GET', do the following:
+    # if the request object is 'GET' then do the following:
     if request.method == 'GET':
-        # retrieve all of the snippet objects (as a query set)
+        # set 'snippet' to all of the Snippet objects in the list
         snippets = Snippet.object.all()
-        # serialize these snippet objects as 1 query set (this is why we use the many=True)
-        serializer = SnippetSerializer(snippets, many=True)
-        # return all of this as 1 HttpResponse in JSON form
-        return JSONResponse(serilaizer.data)
+        # set 'serializer' to one query set of snippet objects
+        serilaizer = SnippetSerializer(snippets, many=True)
+        # return this serialized data as 1 Response object that will take on the
+        # content type requested by the client
+        return Response(serilaizer.data)
 
-    # if object is 'POST', do the following:
+    # if the request object is 'POST' then do the following:
     elif request.method == 'POST':
-        # parse the request object to turn it into Python native datatypes
-        data = JSONParser().parse(request)
-        # restore native datatypes into fully populated object instance
-        serializer = SnippetSerializer(data=data)
-        # if this passes all of the validators on the Snippet class
+        # set 'serializer' to serialized request data
+        serializer = SnippetSerializer(data=request.data)
+        # if this serializer is valid, do the following:
         if serializer.is_valid():
-            # save the serialized object
+            # save serialized request data
             serializer.save()
-            # return the response object in JSON and send a status code 201 for
-            # request being fulfilled and resources have been successfully created
-            return JSONResponse(serializer.data, status=201)
-        # if request object is 'POST' and serializer is not valid, respond with an
-        # error and status code 400 for server not processing request due to client error
-        return JSONResponse(serializer.errors, status=400)
+            # return a Response object of 1- serialized data that has now been
+            # saved, 2- send an explicit status code of 201, CREATED
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # if the serializer is not valid 1- send back a serializer error,
+        # 2- send explicit status code of 400, BAD REQUEST
+        return Response(serializer.errors, status=status.HTPP_400_BAD_REQUEST)
 
 
 @csrf_exempt
