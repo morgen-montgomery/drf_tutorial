@@ -1,7 +1,17 @@
+from django.contrib.auth.models import User
+from snippets.serializers import UserSerializer
 from snippets.models import Snippet
 from snippets.serializers import SnippetSerializer
 from rest_framework import generics
 
+
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 # create class 'SnippetList and pass in a generic that will create and list object,
 # generate a generic API view
