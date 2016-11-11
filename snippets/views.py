@@ -19,6 +19,8 @@ class SnippetList(generics.ListCreateAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 # create class 'SnippetDetail' and pass in a generic that will retrieve, update and
 # destroy a specific object, and generate a generic API view
