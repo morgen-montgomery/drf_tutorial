@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from rest_framework import viewsets
-
+from rest_framework.decorators import detail_route
 
 # this takes care of what I had for both UserList class and
 # UserDetail class, which used the same queryset and
@@ -24,35 +24,30 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    
 
-# create class 'SnippetList and pass in a generic that will create and list object,
-# generate a generic API view
-class SnippetList(generics.ListCreateAPIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+# this replaces the need to use 'SnippetList', 'SnippetDetail', AND
+# 'SnippetHighlight', as all of this functionality is now
+# provided using ModelViewSet in the SnippetViewSet class
+class SnippetViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides 'list', 'create', 'retrieve',
+    'update', and 'destroy' actions.
+
+    Additionally we also provide an extra 'highlight' action.
+    """
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsOwnerOrReadOnly,)
+
+    @detail_route(renderer_classes=[renderers.StaticHTMLRenderer])
+    def highlight(self, request, *args, **kwargs):
+        snippet = seld.get_object()
+        return Response(snippet.highlighted)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
-
-
-# create class 'SnippetDetail' and pass in a generic that will retrieve, update and
-# destroy a specific object, and generate a generic API view
-class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsOwnerOrReadOnly,)
-    queryset = Snippet.objects.all()
-    serializer_class = SnippetSerializer
-
-
-class SnippetHighlight(generics.GenericAPIView):
-    queryset = Snippet.objects.all()
-    renderer_classes = (renderers.StaticHTMLRenderer,)
-
-    def get(self, request, *args, **kwargs):
-        snippet = self.get_object()
-        return Response(snippet.highlighted)
 
 
 @api_view(['GET'])
