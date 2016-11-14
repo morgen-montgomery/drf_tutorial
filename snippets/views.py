@@ -12,16 +12,19 @@ from rest_framework import renderers
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
+from rest_framework import viewsets
 
-class UserList(generics.ListAPIView):
+
+# this takes care of what I had for both UserList class and
+# UserDetail class, which used the same queryset and
+# serializer_class, with 'ListAPIView' and 'RetrieveAPIView'
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    This viewset automatically provides 'list' and 'detail' actions.
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
-
-class UserDetail(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
+    
 
 # create class 'SnippetList and pass in a generic that will create and list object,
 # generate a generic API view
