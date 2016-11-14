@@ -18,7 +18,7 @@ from rest_framework.decorators import detail_route
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    This viewset automatically provides 'list' and 'detail' actions.
+    This ViewSet automatically provides 'list' and 'detail' actions.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
