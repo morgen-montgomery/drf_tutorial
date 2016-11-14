@@ -56,5 +56,5 @@ class SnippetHighlight(generics.GenericAPIView):
 def api_root(request, format=None):
     return Response({
         'users': reverse('user-list', request=request, format=format),
-        'snippets': revers('snippet-list'm request=request, format=format)
+        'snippets': reverse('snippet-list', request=request, format=format)
     })
