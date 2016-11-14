@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
 
 
-# create class and define the fields that get serialized/deserialized
 class SnippetSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
     highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')

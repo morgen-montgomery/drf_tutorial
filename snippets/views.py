@@ -15,9 +15,7 @@ from rest_framework.reverse import reverse
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 
-# this takes care of what I had for both UserList class and
-# UserDetail class, which used the same queryset and
-# serializer_class, with 'ListAPIView' and 'RetrieveAPIView'
+
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This viewset automatically provides 'list' and 'detail' actions.
@@ -26,15 +24,11 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserSerializer
 
 
-# this replaces the need to use 'SnippetList', 'SnippetDetail', AND
-# 'SnippetHighlight', as all of this functionality is now
-# provided using ModelViewSet in the SnippetViewSet class
 class SnippetViewSet(viewsets.ModelViewSet):
     """
-    This viewset automatically provides 'list', 'create', 'retrieve',
+    This ViewSet provides 'list', 'create', 'retrieve',
     'update', and 'destroy' actions.
-
-    Additionally we also provide an extra 'highlight' action.
+    Also added is a 'highlight' action.
     """
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
